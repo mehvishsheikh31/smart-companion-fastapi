@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-wrapper">
+    <div class="container py-4">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="/" class="btn btn-glass text-white"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <h3 class="fw-bold text-white mb-0 text-shadow">Interview Mastery Hub</h3>
+            <div class="d-flex gap-2">
+                <button onclick="saveToProfile()" id="saveBtn" class="btn btn-glass text-white d-none">
+                    <i class="fas fa-save me-2"></i> Save Result
+                </button>
+                <button onclick="downloadContent()" class="btn btn-white-pill shadow">
+                    <i class="fas fa-download me-2"></i> Download
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-4">
+                <div class="sticky-sidebar">
+                    <div class="glass-card h-100 d-flex flex-column shadow-lg">
+                        
+                        <div class="mb-3">
+                            <div class="d-grid gap-2">
+                                <button onclick="switchMode('qa')" class="tool-btn active" id="btn-qa">
+                                    <i class="fas fa-bolt text-primary me-2"></i> Question Generator
+                                </button>
+                                <button onclick="switchMode('improve')" class="tool-btn" id="btn-improve">
+                                    <i class="fas fa-magic text-success me-2"></i> Answer Improver
+                                </button>
+                                <button onclick="switchMode('chat')" class="tool-btn" id="btn-chat">
+                                    <i class="fas fa-comments text-warning me-2"></i> Chatbot
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div id="settingsPanel">
+                            <h6 class="fw-bold text-dark-purple mb-3"><i class="fas fa-sliders-h me-2"></i>Configuration</h6>
+                            <form id="setupForm">
+                                
+                                <label class="small fw-bold text-secondary mb-1">Target Role</label>
+                                <select id="roleInput" class="form-select mb-2" style="cursor: pointer;">
+                                    <option value="" disabled selected>Select Role...</option>
+                                    
+                                    <optgroup label="Data & AI">
+                                        <option value="Data Scientist">Data Scientist</option>
+                                        <option value="Data Analyst">Data Analyst</option>
+                                        <option value="Machine Learning Engineer">ML Engineer</option>
+                                        <option value="Big Data Engineer">Big Data Engineer</option>
+                                        <option value="AI Researcher">AI Researcher</option>
+                                    </optgroup>
+
+                                    <optgroup label="Software & Web">
+                                        <option value="Software Engineer">Software Engineer</option>
+                                        <option value="Frontend Developer">Frontend Developer (React/Vue)</option>
+                                        <option value="Backend Developer">Backend Developer (Node/Java/Python)</option>
+                                        <option value="Full Stack Developer">Full Stack Developer</option>
+                                        <option value="Java Developer">Java Developer</option>
+                                        <option value="Python Developer">Python Developer</option>
+                                        <option value="Mobile App Developer">Mobile App Developer</option>
+                                    </optgroup>
+
+                                    <optgroup label="Infrastructure & Cloud">
+                                        <option value="DevOps Engineer">DevOps Engineer</option>
+                                        <option value="Cloud Architect">Cloud Architect (AWS/Azure)</option>
+                                        <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                                        <option value="System Administrator">System Administrator</option>
+                                    </optgroup>
+
+                                    <optgroup label="Product & Management">
+                                        <option value="Product Manager">Product Manager</option>
+                                        <option value="Project Manager">Project Manager</option>
+                                        <option value="Business Analyst">Business Analyst</option>
+                                    </optgroup>
+                                </select>
+
+                                <label class="small fw-bold text-secondary mb-1">Company Type</label>
+                                <select id="companyInput" class="form-select mb-2 bg-light border-primary">
+                                    <option value="Product Based" selected>Product Based (Google, Amazon, etc.)</option>
+                                    <option value="Service Based">Service Based (TCS, Infosys, etc.)</option>
+                                </select>
+
+                                <label class="small fw-bold text-secondary mb-1">Resume</label>
+                                <input type="file" id="resumeFile" class="form-control mb-2" accept=".pdf">
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="small fw-bold text-secondary mb-1">Type</label>
+                                        <select id="qType" class="form-select">
+                                            <option value="Technical">Technical</option>
+                                            <option value="HR">HR</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="small fw-bold text-secondary mb-1">Count</label>
+                                        <select id="qCount" class="form-select">
+                                            <option value="10">10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="generateQuestions()" class="btn btn-gradient w-100 py-2 fw-bold shadow-sm">
+                                    Generate
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="glass-card min-h-600 position-relative" id="contentArea">
+                    
+                    <div id="loader" class="d-none text-center py-5">
+                        <div class="spinner-border text-light-purple" role="status"></div>
+                        <p class="mt-3 text-dark fw-bold animate-pulse">Analyzing Resume & Generating Questions...</p>
+                    </div>
+
+                    <div id="qaSection" class="content-section">
+                        <div class="text-center py-5 empty-state">
+                            <i class="fas fa-stopwatch fa-4x text-muted opacity-25 mb-3"></i>
+                            <h4 class="text-dark fw-bold">Interview Simulator</h4>
+                            <p class="text-muted">Select <strong>Product</strong> or <strong>Service</strong> based style to begin.</p>
+                        </div>
+                        <div id="qaResult" class="fade-in"></div>
+                    </div>
+
+                    <div id="improveSection" class="content-section d-none">
+                        <h4 class="fw-bold mb-3 text-success"><i class="fas fa-pen-nib me-2"></i>Answer Refiner</h4>
+                        <div class="p-4 bg-light rounded-4 mb-3 border">
+                            <input type="text" id="impQuestion" class="form-control mb-3" placeholder="Paste Question here...">
+                            <textarea id="impUserAnswer" class="form-control mb-3" rows="5" placeholder="Type your answer..."></textarea>
+                            <button onclick="improveAnswer()" class="btn btn-success text-white w-100 fw-bold">Fix My Answer</button>
+                        </div>
+                        <div id="improveResult"></div>
+                    </div>
+
+                    <div id="chatSection" class="content-section d-none d-flex flex-column h-100">
+                        <h4 class="fw-bold mb-3 text-warning"><i class="fas fa-robot me-2"></i>Career Chat</h4>
+                        <div class="chat-history flex-grow-1 mb-3 p-4 bg-light rounded-4 border" id="chatHistory" style="height: 400px; overflow-y: auto;">
+                            <div class="text-center text-muted small mt-2">Chatbot Online</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="chatInput" class="form-control p-3 rounded-pill" placeholder="Ask anything..." onkeypress="if(event.key==='Enter') sendChat()">
+                            <button onclick="sendChat()" class="btn btn-warning rounded-circle shadow-sm" style="width: 50px; height: 50px;"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. TIMER LOGIC (UPDATED TO 90 SECONDS)
+    let timers = {}; 
+
+    function toggleTimer(btn) {
+        const card = btn.closest('.qa-card');
+        const display = card.querySelector('.timer-display');
+        const cardId = Array.from(document.querySelectorAll('.qa-card')).indexOf(card);
+
+        if (btn.innerText.includes("Start")) {
+            btn.innerHTML = '<i class="fas fa-pause me-1"></i> Stop';
+            btn.classList.replace('btn-outline-danger', 'btn-danger');
+            
+            let timeLeft = 90; // CHANGED TO 90 SECONDS
+            
+            timers[cardId] = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timers[cardId]);
+                    display.innerText = "00:00";
+                    display.classList.add('bg-danger', 'text-white');
+                    return;
+                }
+                timeLeft--;
+                let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                let s = (timeLeft % 60).toString().padStart(2, '0');
+                display.innerText = `${m}:${s}`;
+            }, 1000);
+
+        } else {
+            clearInterval(timers[cardId]);
+            btn.innerHTML = '<i class="fas fa-stopwatch me-1"></i> Start 90s Challenge';
+            btn.classList.replace('btn-danger', 'btn-outline-danger');
+            display.classList.remove('bg-danger', 'text-white');
+        }
+    }
+
+    // 2. SWITCH MODES
+    function switchMode(mode) {
+        document.querySelectorAll('.content-section').forEach(el => el.classList.add('d-none'));
+        document.querySelectorAll('.tool-btn').forEach(el => el.classList.remove('active'));
+        if(mode === 'qa') {
+            document.getElementById('qaSection').classList.remove('d-none');
+            document.getElementById('btn-qa').classList.add('active');
+            document.getElementById('settingsPanel').classList.remove('d-none');
+        }
+        if(mode === 'improve') {
+            document.getElementById('improveSection').classList.remove('d-none');
+            document.getElementById('btn-improve').classList.add('active');
+            document.getElementById('settingsPanel').classList.add('d-none');
+        }
+        if(mode === 'chat') {
+            document.getElementById('chatSection').classList.remove('d-none');
+            document.getElementById('btn-chat').classList.add('active');
+            document.getElementById('settingsPanel').classList.add('d-none');
+        }
+    }
+
+    // 3. GENERATE Q&A
+    async function generateQuestions() {
+        const file = document.getElementById('resumeFile').files[0];
+        const role = document.getElementById('roleInput').value;
+        const company = document.getElementById('companyInput').value;
+
+        if(!file || !role) return alert("Please fill all fields.");
+        
+        document.querySelector('.empty-state').classList.add('d-none');
+        document.getElementById('loader').classList.remove('d-none');
+        document.getElementById('qaResult').innerHTML = '';
+
+        const formData = new FormData();
+        formData.append('resume', file);
+        formData.append('role', role);
+        formData.append('company', company);
+        formData.append('q_type', document.getElementById('qType').value);
+        formData.append('count', document.getElementById('qCount').value);
+
+        const response = await fetch('/interview/generate', { method: 'POST', body: formData });
+        const html = await response.text();
+        
+        document.getElementById('loader').classList.add('d-none');
+        document.getElementById('qaResult').innerHTML = html;
+        document.getElementById('saveBtn').classList.remove('d-none');
+    }
+
+    // 4. SAVE & OTHER FUNCS
+    async function saveToProfile() {
+        const role = document.getElementById('roleInput').value;
+        const content = document.getElementById('qaResult').innerHTML;
+        const btn = document.getElementById('saveBtn');
+        btn.innerHTML = 'Saving...';
+        await fetch('/interview/save', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({role: role, content: content}) });
+        btn.innerHTML = 'Saved!';
+    }
+    
+    async function improveAnswer() {
+        const q = document.getElementById('impQuestion').value;
+        const a = document.getElementById('impUserAnswer').value;
+        if(!q || !a) return alert("Fill in both.");
+        document.getElementById('improveResult').innerHTML = '<div class="spinner-border text-success"></div>';
+        const res = await fetch('/interview/improve', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({question: q, answer: a}) });
+        document.getElementById('improveResult').innerHTML = await res.text();
+    }
+
+    async function sendChat() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value; if(!msg) return;
+        const history = document.getElementById('chatHistory');
+        history.innerHTML += `<div class="d-flex justify-content-end mb-2"><div class="bg-primary text-white p-2 rounded">${msg}</div></div>`;
+        input.value = '';
+        const res = await fetch('/interview/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message: msg}) });
+        history.innerHTML += `<div class="d-flex justify-content-start mb-2"><div class="bg-white border p-2 rounded">${await res.text()}</div></div>`;
+        history.scrollTop = history.scrollHeight;
+    }
+
+    function downloadContent() {
+        let content = document.getElementById('contentArea').innerText;
+        const element = document.createElement('a');
+        const file = new Blob([content], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = "interview_prep.txt";
+        document.body.appendChild(element);
+        element.click();
+    }
+</script>
+
+<style>
+    .module-wrapper { min-height: 100vh; padding-top: 80px; background: radial-gradient(circle at 10% 20%, rgb(111, 66, 193) 0%, rgb(86, 61, 124) 90%); background-attachment: fixed; }
+    .sticky-sidebar { position: sticky; top: 100px; z-index: 100; }
+    .glass-card { background: rgba(255, 255, 255, 0.96); border-radius: 20px; padding: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+    .tool-btn { background: none; border: 1px solid #eee; border-radius: 12px; padding: 12px; width: 100%; text-align: left; transition: all 0.2s; margin-bottom: 8px; }
+    .tool-btn:hover { background: #f8f9fa; transform: translateX(3px); }
+    .tool-btn.active { background: #f3e5f5; border-color: #6f42c1; }
+    .btn-gradient { background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%); color: white; border: none; }
+    .btn-glass { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 50px; padding: 5px 15px; text-decoration: none; }
+    .btn-white-pill { background: white; color: #6f42c1; border-radius: 50px; border:none; padding: 5px 15px; font-weight: bold; }
+    .qa-card { border: 1px solid #eee; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 10px rgba(0,0,0,0.02); transition: transform 0.2s; }
+    .min-h-600 { min-height: 600px; }
+    .text-dark-purple { color: #4a0072; }
+</style>
+{% endblock %}

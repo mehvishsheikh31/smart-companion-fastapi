@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-wrapper">
+    <div class="container py-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-down">
+            <div>
+                <a href="/" class="btn btn-sm btn-light-glass text-white mb-2"><i class="fas fa-arrow-left me-2"></i> Dashboard</a>
+                <h2 class="fw-bold text-white mb-0 text-shadow">Skill Gap & Certification</h2>
+            </div>
+            <div class="bg-white text-dark px-4 py-2 rounded-pill shadow-lg fw-bold d-flex align-items-center">
+                <i class="fas fa-graduation-cap me-2 text-primary"></i>
+                <span>Free Resource Engine</span>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-10">
+                <div class="glass-card p-4 p-lg-5 shadow-2xl animate-fade-up">
+                    <div class="row g-4 align-items-end">
+                        
+                        <div class="col-md-5">
+                            <label class="small fw-bold text-uppercase text-secondary mb-2">My Dream Job</label>
+                            <div class="input-group shadow-sm rounded-4 overflow-hidden border border-light">
+                                <span class="input-group-text bg-white border-0 ps-3"><i class="fas fa-bullseye text-primary"></i></span>
+                                <select id="targetRole" class="form-select border-0 py-3 fw-bold text-dark" style="cursor: pointer;">
+                                    <option value="" disabled selected>Select Role...</option>
+                                    
+                                    <optgroup label="💻 Software & Tech">
+                                        <option value="Frontend Developer">Frontend Developer</option>
+                                        <option value="Backend Developer">Backend Developer</option>
+                                        <option value="Full Stack Developer">Full Stack Developer</option>
+                                        <option value="DevOps Engineer">DevOps Engineer</option>
+                                    </optgroup>
+
+                                    <optgroup label="📊 Data & AI">
+                                        <option value="Data Analyst">Data Analyst</option>
+                                        <option value="Data Scientist">Data Scientist</option>
+                                        <option value="Machine Learning Engineer">ML Engineer</option>
+                                        <option value="Business Analyst">Business Analyst</option>
+                                    </optgroup>
+
+                                    <optgroup label="🛡️ Cyber & Network">
+                                        <option value="Cyber Security Analyst">Cyber Security Analyst</option>
+                                        <option value="Network Engineer">Network Engineer</option>
+                                        <option value="Cloud Architect">Cloud Architect</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-uppercase text-secondary mb-2">My Current Resume</label>
+                            <div class="input-group shadow-sm rounded-4 overflow-hidden border border-light">
+                                <span class="input-group-text bg-white border-0 ps-3"><i class="fas fa-file-pdf text-danger"></i></span>
+                                <input type="file" id="resumeFile" class="form-control border-0 py-3" accept=".pdf">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <button type="button" onclick="generateLearningPath()" class="btn btn-primary bg-gradient w-100 py-3 rounded-4 fw-bold shadow-lg hover-lift">
+                                <i class="fas fa-wand-magic-sparkles me-2"></i> Find Courses
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="loader" class="d-none text-center py-5">
+            <div class="spinner-grow text-light-teal mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="text-white fw-bold">Analyzing Your Skill Gap...</h4>
+            <p class="text-white text-opacity-75">Scanning Cisco, freeCodeCamp, and Kaggle for free certificates.</p>
+        </div>
+
+        <div id="courseResults" class="row g-4 pb-5"></div>
+
+    </div>
+</div>
+
+<script>
+    async function generateLearningPath() {
+        const role = document.getElementById('targetRole').value;
+        const fileInput = document.getElementById('resumeFile');
+
+        if(!role) return alert("Please select a Target Job Role.");
+        if(fileInput.files.length === 0) return alert("Please upload your resume.");
+
+        // UI Updates
+        document.getElementById('courseResults').innerHTML = '';
+        document.getElementById('loader').classList.remove('d-none');
+        window.scrollTo({ top: 400, behavior: 'smooth' });
+
+        const formData = new FormData();
+        formData.append('role', role);
+        formData.append('resume', fileInput.files[0]);
+
+        try {
+            const response = await fetch('/courses/gap_analysis', { method: 'POST', body: formData });
+            const html = await response.text();
+            
+            document.getElementById('loader').classList.add('d-none');
+            document.getElementById('courseResults').innerHTML = html;
+        } catch (e) {
+            alert("Error generating path. Please try again.");
+            document.getElementById('loader').classList.add('d-none');
+        }
+    }
+</script>
+
+<style>
+    /* THEME: Teal/Dark Blue Gradient */
+    .module-wrapper {
+        min-height: 100vh;
+        padding-top: 80px;
+        background: radial-gradient(circle at 10% 20%, rgb(0, 60, 60) 0%, rgb(10, 20, 40) 90%);
+        background-attachment: fixed;
+    }
+
+    /* GLASS CARD */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-light-glass { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 50px; }
+    
+    /* GRADIENTS & COLORS */
+    .bg-gradient { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); border:none; transition: all 0.3s; }
+    .bg-gradient:hover { filter: brightness(110%); transform: translateY(-2px); }
+    .text-light-teal { color: #00b09b; }
+    
+    /* ANIMATIONS */
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    .animate-fade-up { animation: fadeUp 0.6s ease-out; }
+    .animate-fade-down { animation: fadeDown 0.6s ease-out; }
+    
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* CARD STYLING */
+    .course-card { transition: all 0.3s ease; border: 1px solid #eee; }
+    .course-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important; border-color: #00b09b; }
+    
+    .ls-1 { letter-spacing: 1px; }
+</style>
+{% endblock %}

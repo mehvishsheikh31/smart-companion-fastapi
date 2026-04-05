@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-wrapper">
+    <div class="container py-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-down">
+            <div>
+                <a href="/" class="btn btn-sm btn-light-glass text-white mb-2"><i class="fas fa-arrow-left me-2"></i> Dashboard</a>
+                <h2 class="fw-bold text-white mb-0 text-shadow">AI Resume Analyzer</h2>
+            </div>
+            <div class="bg-white text-dark px-4 py-2 rounded-pill shadow-lg fw-bold d-flex align-items-center">
+                <i class="fas fa-magic me-2 text-purple"></i>
+                <span>ATS Scorer</span>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-card p-5 text-center shadow-2xl animate-fade-up">
+                    
+                    <div class="mb-4">
+                        <div class="icon-circle bg-purple bg-opacity-10 text-purple mx-auto mb-3">
+                            <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark">Upload Your Resume</h3>
+                        <p class="text-muted">Select your target role and upload your CV to get an AI score.</p>
+                    </div>
+
+                    <form action="/resume/analyze" method="POST" enctype="multipart/form-data" id="resumeForm">
+                        
+                        <div class="form-group mb-4 text-start">
+                            <label class="fw-bold small text-uppercase text-muted mb-2">Target Job Role</label>
+                            <div class="input-group shadow-sm rounded-3 overflow-hidden border">
+                                <span class="input-group-text bg-white border-0 ps-3"><i class="fas fa-briefcase text-purple"></i></span>
+                                <select name="job_role" class="form-select border-0 py-3 fw-bold text-dark" style="cursor: pointer;" required>
+                                    <option value="" disabled selected>Select Target Role...</option>
+                                    <optgroup label="💻 Software Development">
+                                        <option value="Frontend Developer">Frontend Developer</option>
+                                        <option value="Backend Developer">Backend Developer</option>
+                                        <option value="Full Stack Developer">Full Stack Developer</option>
+                                        <option value="Mobile App Developer">Mobile App Developer</option>
+                                        <option value="DevOps Engineer">DevOps Engineer</option>
+                                    </optgroup>
+                                    <optgroup label="📊 Data & Analytics">
+                                        <option value="Data Analyst">Data Analyst</option>
+                                        <option value="Data Scientist">Data Scientist</option>
+                                        <option value="Machine Learning Engineer">ML Engineer</option>
+                                        <option value="Business Analyst">Business Analyst</option>
+                                    </optgroup>
+                                    <optgroup label="🎨 Design & Product">
+                                        <option value="UI/UX Designer">UI/UX Designer</option>
+                                        <option value="Product Manager">Product Manager</option>
+                                        <option value="Graphic Designer">Graphic Designer</option>
+                                    </optgroup>
+                                    <optgroup label="🔒 Cyber & Network">
+                                        <option value="Cyber Security Analyst">Cyber Security Analyst</option>
+                                        <option value="Network Engineer">Network Engineer</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="upload-area mb-2 p-5 rounded-4 border border-2 border-dashed" id="dropZone">
+                            <input type="file" name="resume" id="resumeInput" class="d-none" accept=".pdf" required>
+                            <label for="resumeInput" class="w-100 h-100" style="cursor: pointer;">
+                                <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                                <h5 class="fw-bold text-dark" id="fileName">Click to Browse PDF</h5>
+                                <p class="text-muted small mb-0">Supported format: PDF only</p>
+                            </label>
+                        </div>
+                        
+                        <div class="text-end mb-4">
+                            <small class="text-danger fw-bold" style="font-size: 0.8rem;">
+                                <i class="fas fa-exclamation-circle me-1"></i> Max file size: 10MB
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-purple-gradient w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale" onclick="showLoader()">
+                            <i class="fas fa-search me-2"></i> Analyze My Resume
+                        </button>
+                    </form>
+
+                    <div id="loader" class="d-none mt-4">
+                        <div class="spinner-border text-purple" role="status"></div>
+                        <p class="mt-2 fw-bold text-purple">AI is analyzing your resume...</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Show filename when selected
+    document.getElementById('resumeInput').addEventListener('change', function(){
+        if(this.files[0]) {
+            // Check size (10MB = 10 * 1024 * 1024 bytes)
+            if(this.files[0].size > 10485760) {
+                alert("File is too large! Please upload a file smaller than 10MB.");
+                this.value = ""; // Clear input
+            } else {
+                document.getElementById('fileName').innerText = this.files[0].name;
+                document.querySelector('.upload-area').classList.add('bg-light');
+            }
+        }
+    });
+
+    function showLoader() {
+        const role = document.querySelector('select[name="job_role"]').value;
+        const file = document.querySelector('input[name="resume"]').files.length;
+        if(role && file > 0) {
+            document.getElementById('resumeForm').classList.add('opacity-50', 'pointer-events-none');
+            document.getElementById('loader').classList.remove('d-none');
+        }
+    }
+</script>
+
+<style>
+    .module-wrapper {
+        min-height: 100vh;
+        padding-top: 80px;
+        background: radial-gradient(circle at 10% 20%, rgb(30, 10, 50) 0%, rgb(10, 5, 20) 90%);
+        background-attachment: fixed;
+    }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 24px; }
+    .btn-light-glass { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 50px; }
+    
+    /* NEW BUTTON STYLE (Darker & clearer) */
+    .btn-purple-gradient { 
+        background: linear-gradient(135deg, #6f42c1 0%, #5e35b1 100%); 
+        color: white; border: none; 
+        transition: all 0.3s ease;
+    }
+    .btn-purple-gradient:hover { 
+        background: linear-gradient(135deg, #5e35b1 0%, #4527a0 100%); 
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(94, 53, 177, 0.4);
+    }
+
+    .text-purple { color: #6f42c1; }
+    .icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    
+    .upload-area { transition: 0.3s; background: #f8f9fa; border-color: #dee2e6; cursor: pointer; }
+    .upload-area:hover { background: #e9ecef; border-color: #6f42c1; }
+    
+    .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    .animate-fade-up { animation: fadeUp 0.6s ease-out; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}

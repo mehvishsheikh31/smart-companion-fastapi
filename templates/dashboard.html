@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="container py-5 position-relative z-10">
+        
+        <div class="row align-items-center mb-5 animate-fade-down">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Outfit', sans-serif;">
+                    Welcome, <span class="text-gradient">{{ user.name }}</span>
+                </h1>
+                <p class="text-lavender fs-5 mb-0">Your Smart Companion is ready to assist.</p>
+                
+                {% if user.email == 'mehvishsheikh.3101@gmail.com' %}
+                <div class="mt-4 animate-fade-down" style="animation-delay: 0.2s;">
+                    <a href="/admin" class="btn btn-admin rounded-pill px-4 shadow-lg hover-scale">
+                        <i class="fas fa-shield-alt me-2"></i> Admin Dashboard
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                <a href="/auth/logout" class="btn btn-glass text-white px-4 py-2 rounded-pill">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            
+            <div class="col-md-6 col-lg-3 animate-fade-up" style="animation-delay: 0.1s;">
+                <a href="/resume/" class="card-module h-100 text-decoration-none">
+                    <div class="glass-card p-4 h-100 position-relative overflow-hidden">
+                        <div class="hover-glow glow-purple"></div>
+                        <div class="position-relative z-10 text-center">
+                            <div class="icon-box bg-purple-soft text-purple mb-3 mx-auto shadow-sm">
+                                <i class="fas fa-file-invoice fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold text-white">Resume Analysis</h5>
+                            <p class="text-muted small mb-0">Deep ATS Scoring & Insights</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-3 animate-fade-up" style="animation-delay: 0.2s;">
+                <a href="/chatbot" class="card-module h-100 text-decoration-none">
+                    <div class="glass-card p-4 h-100 position-relative overflow-hidden">
+                        <div class="hover-glow glow-pink"></div>
+                        <div class="position-relative z-10 text-center">
+                            <div class="icon-box bg-pink-soft text-pink mb-3 mx-auto shadow-sm">
+                                <i class="fas fa-user-tie fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold text-white">Mock Interview</h5>
+                            <p class="text-muted small mb-0">AI Voice-Based Practice</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-3 animate-fade-up" style="animation-delay: 0.3s;">
+                <a href="/jobs/" class="card-module h-100 text-decoration-none">
+                    <div class="glass-card p-4 h-100 position-relative overflow-hidden">
+                        <div class="hover-glow glow-blue"></div>
+                        <div class="position-relative z-10 text-center">
+                            <div class="icon-box bg-blue-soft text-blue mb-3 mx-auto shadow-sm">
+                                <i class="fas fa-search-location fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold text-white">Job Search</h5>
+                            <p class="text-muted small mb-0">Find Matching Roles</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-3 animate-fade-up" style="animation-delay: 0.4s;">
+                <a href="/courses/" class="card-module h-100 text-decoration-none">
+                    <div class="glass-card p-4 h-100 position-relative overflow-hidden">
+                        <div class="hover-glow glow-gold"></div>
+                        <div class="position-relative z-10 text-center">
+                            <div class="icon-box bg-gold-soft text-gold mb-3 mx-auto shadow-sm">
+                                <i class="fas fa-lightbulb fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold text-white">Course Recommender</h5>
+                            <p class="text-muted small mb-0">Fill Skill Gaps for Free</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-6 animate-fade-up" style="animation-delay: 0.5s;">
+                <div class="glass-panel p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-light border-opacity-10 pb-3">
+                        <h5 class="fw-bold text-white mb-0"><i class="fas fa-history me-2 text-purple"></i>Recent Reports</h5>
+                    </div>
+                    
+                    {% if reports %}
+                        <div class="d-flex flex-column gap-3">
+                        {% for report in reports %}
+                            <a href="/report/{{ report.id }}" class="text-decoration-none">
+                                <div class="activity-item p-3 rounded-3 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-circle bg-purple-soft text-purple me-3 small">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-white fw-bold mb-0">{{ report.role }}</h6>
+                                            <small class="text-lavender">View Analysis</small>
+                                        </div>
+                                    </div>
+                                    <small class="text-white text-opacity-50">{{ report.created_at }}</small>
+                                </div>
+                            </a>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-white text-opacity-25">
+                            <i class="far fa-file-alt fa-3x mb-3"></i>
+                            <p>No analysis yet. Try the Resume Module!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-6 animate-fade-up" style="animation-delay: 0.6s;">
+                <div class="glass-panel p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-light border-opacity-10 pb-3">
+                        <h5 class="fw-bold text-white mb-0"><i class="fas fa-bookmark me-2 text-blue"></i>Saved Jobs</h5>
+                        <a href="/jobs/" class="btn btn-sm btn-glass text-white rounded-pill">Find More</a>
+                    </div>
+
+                    {% if saved_jobs %}
+                        <div class="d-flex flex-column gap-3">
+                        {% for job in saved_jobs %}
+                            <div class="activity-item p-3 rounded-3 d-flex align-items-center">
+                                <div class="icon-circle bg-blue-soft text-blue me-3 fw-bold">
+                                    {{ job.company[0] }}
+                                </div>
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <h6 class="text-white fw-bold mb-0 text-truncate">{{ job.title }}</h6>
+                                    <small class="text-lavender">{{ job.company }}</small>
+                                </div>
+                                <a href="{{ job.url }}" target="_blank" class="btn btn-sm btn-icon-only rounded-circle">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-white text-opacity-25">
+                            <i class="far fa-bookmark fa-3x mb-3"></i>
+                            <p>No saved jobs. Go exploring!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    :root {
+        --purple-glow: #d8b4fe;
+        --dark-violet: #0f0518;
+    }
+
+    /* 1. BACKGROUND */
+    .dashboard-wrapper {
+        min-height: 100vh;
+        padding-top: 80px;
+        background-color: var(--dark-violet);
+        background-image: radial-gradient(circle at 50% 0%, #2e1065 0%, #000000 80%);
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* Glow Orbs */
+    .glow-orb {
+        position: absolute; border-radius: 50%; filter: blur(100px); z-index: 0;
+    }
+    .orb-1 { width: 600px; height: 600px; background: rgba(124, 58, 237, 0.15); top: -200px; left: -100px; }
+    .orb-2 { width: 500px; height: 500px; background: rgba(236, 72, 153, 0.1); bottom: -100px; right: -100px; }
+
+    /* 2. TEXT STYLES */
+    .text-gradient {
+        background: linear-gradient(to right, #e9d5ff, #c4b5fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .text-lavender { color: #d8b4fe; opacity: 0.8; }
+
+    /* 3. GLASS MODULE CARDS */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .card-module:hover .glass-card {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(216, 180, 254, 0.3);
+        box-shadow: 0 20px 40px -10px rgba(124, 58, 237, 0.3);
+    }
+
+    /* Hover Glow Effects */
+    .hover-glow {
+        position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        opacity: 0; transition: opacity 0.4s; pointer-events: none;
+    }
+    .card-module:hover .hover-glow { opacity: 1; }
+
+    /* 4. ICONS & COLORS */
+    .icon-box {
+        width: 70px; height: 70px; border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.3s;
+    }
+    .card-module:hover .icon-box { transform: scale(1.1) rotate(5deg); }
+
+    .bg-purple-soft { background: rgba(139, 92, 246, 0.2); } .text-purple { color: #c4b5fd; }
+    .bg-pink-soft { background: rgba(236, 72, 153, 0.2); } .text-pink { color: #f9a8d4; }
+    .bg-blue-soft { background: rgba(59, 130, 246, 0.2); } .text-blue { color: #93c5fd; }
+    .bg-gold-soft { background: rgba(234, 179, 8, 0.2); } .text-gold { color: #fde047; }
+
+    /* 5. GLASS PANELS (Lists) */
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+    }
+
+    .activity-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid transparent;
+        transition: 0.2s;
+    }
+    .activity-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+
+    /* 6. BUTTONS */
+    .btn-glass { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+    .btn-glass:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+    .btn-admin {
+        background: linear-gradient(135deg, #7c3aed, #db2777);
+        color: white; border: none; font-weight: 600;
+    }
+    .btn-admin:hover { filter: brightness(1.2); color: white; transform: translateY(-2px); }
+
+    .btn-icon-only { background: rgba(255,255,255,0.1); color: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+    .btn-icon-only:hover { background: white; color: black; }
+
+    /* 7. ANIMATIONS */
+    .animate-fade-down { animation: fadeDown 0.8s cubic-bezier(0,0,0.2,1); }
+    .animate-fade-up { animation: fadeUp 0.8s cubic-bezier(0,0,0.2,1) backwards; }
+    
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}

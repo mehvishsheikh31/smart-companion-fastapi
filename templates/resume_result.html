@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="module-wrapper">
+    <div class="container py-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-down">
+            <a href="/resume" class="btn btn-sm btn-light-glass text-white"><i class="fas fa-arrow-left me-2"></i> New Scan</a>
+            <h2 class="fw-bold text-white mb-0">Analysis Report</h2>
+            <button onclick="window.print()" class="btn btn-sm btn-light-glass text-white"><i class="fas fa-print me-2"></i> Save PDF</button>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="glass-card p-5 shadow-2xl animate-fade-up">
+                    
+                    <div class="ai-content">
+                        {{ analysis | safe }}
+                    </div>
+
+                    <div class="mt-5 text-center border-top pt-4">
+                        <h5 class="fw-bold text-dark mb-3">What's Next?</h5>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="/courses" class="btn btn-outline-primary rounded-pill fw-bold px-4">
+                                <i class="fas fa-graduation-cap me-2"></i>Fix Skills
+                            </a>
+                            <a href="/jobs" class="btn btn-primary bg-gradient rounded-pill fw-bold px-4 shadow-sm">
+                                <i class="fas fa-briefcase me-2"></i>Find Jobs
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* 1. BACKGROUND */
+    .module-wrapper {
+        min-height: 100vh;
+        padding-top: 80px;
+        background: radial-gradient(circle at 10% 20%, rgb(30, 10, 50) 0%, rgb(10, 5, 20) 90%);
+        background-attachment: fixed;
+    }
+
+    /* 2. GLASS CARD */
+    .glass-card { 
+        background: rgba(255, 255, 255, 0.98); 
+        border-radius: 24px; 
+        color: #333; 
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    
+    .btn-light-glass { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 50px; }
+    .bg-gradient { background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%); border:none; }
+
+    /* 3. PROFILE CARDS COLORS */
+    .bg-light-primary { background: #e3f2fd; border-color: #bbdefb !important; }
+    .bg-light-purple { background: #f3e5f5; border-color: #e1bee7 !important; }
+    .bg-light-teal { background: #e0f2f1; border-color: #b2dfdb !important; }
+    .text-purple { color: #8e24aa; }
+    .text-teal { color: #00897b; }
+    .ls-1 { letter-spacing: 1px; }
+
+    /* 4. SURGERY TABLE STYLES */
+    .bg-light-red { background-color: #fff5f5; }
+    .bg-light-green { background-color: #f0fff4; }
+    .table-bordered th, .table-bordered td { border-color: #eee !important; vertical-align: middle; }
+
+    /* 5. ANIMATIONS */
+    .hover-lift:hover { transform: translateY(-5px); transition: transform 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .animate-fade-up { animation: fadeUp 0.8s ease-out backwards; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* 6. LINKS */
+    a { text-decoration: none; }
+    /* NEW CSS FOR SUMMARIES */
+.border-left-blue { border-left: 5px solid #0d6efd !important; }
+.border-left-purple { border-left: 5px solid #6f42c1 !important; }
+.border-left-teal { border-left: 5px solid #20c997 !important; }
+
+.bg-purple { background-color: #6f42c1; }
+.text-purple { color: #6f42c1; }
+.bg-teal { background-color: #20c997; }
+.text-teal { color: #20c997; }
+
+.bg-light-red { background-color: #fff5f5; }
+.ls-1 { letter-spacing: 1px; }
+
+/* Keep existing Glass Card styles */
+.glass-card { background: rgba(255, 255, 255, 0.98); border-radius: 24px; color: #333; }
+
+/* SUMMARY CARD BORDERS (Top Border for clean look) */
+.border-top-blue { border-top: 5px solid #0d6efd !important; }
+.border-top-purple { border-top: 5px solid #6f42c1 !important; }
+.border-top-teal { border-top: 5px solid #20c997 !important; }
+
+/* COLORS */
+.text-purple { color: #6f42c1; }
+.text-teal { color: #20c997; }
+
+/* SKILL BOXES */
+.bg-light-green { background-color: #f0fff4; }
+.bg-light-red { background-color: #fff5f5; }
+
+/* GENERAL TEXT READABILITY */
+.text-dark { color: #212529 !important; }
+small { font-size: 0.85rem; }
+
+/* TABLE STYLING */
+.table-bordered th, .table-bordered td { border-color: #eee !important; vertical-align: middle; }
+</style>
+{% endblock %}
