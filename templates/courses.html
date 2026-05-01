@@ -70,8 +70,8 @@
 
         <div id="loader" class="d-none text-center py-5">
             <div class="spinner-grow text-light-teal mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-            <h4 class="text-white fw-bold">Analyzing Your Skill Gap...</h4>
-            <p class="text-white text-opacity-75">Scanning Cisco, freeCodeCamp, and Kaggle for free certificates.</p>
+            <h4 class="text-white fw-bold" id="loaderMsg">Scanning your resume...</h4>
+            <p class="text-white text-opacity-75">Searching IBM, Kaggle, GFG, PW Skills & more for free courses.</p>
         </div>
 
         <div id="courseResults" class="row g-4 pb-5"></div>
@@ -80,16 +80,40 @@
 </div>
 
 <script>
+    const loaderMessages = [
+        "Scanning your resume...",
+        "Identifying skill gaps...",
+        "Searching IBM SkillsBuild & Kaggle...",
+        "Checking GFG, PW Skills & Coding Ninjas...",
+        "Building your learning plan..."
+    ];
+    let loaderInterval = null;
+
+    function startLoaderMessages() {
+        let i = 0;
+        const el = document.getElementById('loaderMsg');
+        el.textContent = loaderMessages[0];
+        loaderInterval = setInterval(() => {
+            i = (i + 1) % loaderMessages.length;
+            el.style.opacity = 0;
+            setTimeout(() => { el.textContent = loaderMessages[i]; el.style.opacity = 1; }, 300);
+        }, 2000);
+    }
+
+    function stopLoaderMessages() {
+        clearInterval(loaderInterval);
+    }
+
     async function generateLearningPath() {
         const role = document.getElementById('targetRole').value;
         const fileInput = document.getElementById('resumeFile');
 
-        if(!role) return alert("Please select a Target Job Role.");
-        if(fileInput.files.length === 0) return alert("Please upload your resume.");
+        if (!role) return alert("Please select a Target Job Role.");
+        if (fileInput.files.length === 0) return alert("Please upload your resume.");
 
-        // UI Updates
         document.getElementById('courseResults').innerHTML = '';
         document.getElementById('loader').classList.remove('d-none');
+        startLoaderMessages();
         window.scrollTo({ top: 400, behavior: 'smooth' });
 
         const formData = new FormData();
@@ -99,12 +123,24 @@
         try {
             const response = await fetch('/courses/gap_analysis', { method: 'POST', body: formData });
             const html = await response.text();
-            
+            stopLoaderMessages();
             document.getElementById('loader').classList.add('d-none');
             document.getElementById('courseResults').innerHTML = html;
+            document.getElementById('courseResults').scrollIntoView({ behavior: 'smooth' });
         } catch (e) {
-            alert("Error generating path. Please try again.");
+            stopLoaderMessages();
             document.getElementById('loader').classList.add('d-none');
+            document.getElementById('courseResults').innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <div class="glass-card p-5 mx-auto" style="max-width:480px;">
+                        <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                        <h5 class="fw-bold text-dark">Something went wrong</h5>
+                        <p class="text-muted small">Please try again or upload a different resume.</p>
+                        <button onclick="generateLearningPath()" class="btn btn-primary rounded-pill px-4 fw-bold">
+                            <i class="fas fa-redo me-2"></i>Retry
+                        </button>
+                    </div>
+                </div>`;
         }
     }
 </script>
@@ -146,5 +182,6 @@
     .course-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important; border-color: #00b09b; }
     
     .ls-1 { letter-spacing: 1px; }
+    #loaderMsg { transition: opacity 0.3s ease; }
 </style>
 {% endblock %}

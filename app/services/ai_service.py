@@ -205,61 +205,76 @@ async def generate_interview_questions(
 
 async def analyze_skill_gap(resume_text: str, target_role: str) -> str:
     """Generate course recommendations HTML based on skill gap."""
-    
+
     prompt = f"""
     Role: Senior Technical Career Coach.
     Task: Analyze the resume for the target role: "{target_role}".
     Resume Content: "{resume_text[:2000]}"
-    
-    1. Identify the 4 MOST CRITICAL MISSING SKILLS.
-    2. For each skill, recommend ONE high-quality FREE course.
-    
-    PRIORITIZE THESE REPUTABLE FREE PROVIDERS:
-    - GeeksforGeeks
-    - Microsoft Learn
-    - Google Cloud Skills Boost / Kaggle
-    - Cisco Networking Academy
-    - freeCodeCamp
-    - IBM SkillsBuild
-    - Simplilearn / Great Learning
-    
-    OUTPUT HTML ONLY. NO MARKDOWN.
-    
-    Use this exact HTML structure for a 2x2 Grid. 
-    IMPORTANT: Vary the colors for each card (Use 'primary', 'success', 'warning', 'info' for variety).
-    
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card h-100 border-0 shadow-sm rounded-4 position-relative overflow-hidden hover-lift">
-                <div class="position-absolute top-0 start-0 w-100" style="height: 6px; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);"></div>
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="icon-circle bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                            <i class="fas fa-book-reader fa-lg"></i>
-                        </div>
-                        <div>
-                            <small class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem; letter-spacing: 1px;">MISSING SKILL</small>
-                            <h5 class="fw-bold text-dark mb-0">{{Skill Name}}</h5>
-                        </div>
-                    </div>
-                    <span class="badge bg-light text-primary border border-primary-subtle rounded-pill px-3 py-2 mb-3">
-                        <i class="fas fa-university me-1"></i> {{Provider Name}}
-                    </span>
-                    <p class="text-muted small mb-4" style="line-height: 1.6;">
-                        {{One sentence on why this course is the best choice.}}
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top border-light">
-                        <span class="fw-bold text-success small">
-                            <i class="fas fa-check-circle me-1"></i> 100% FREE
-                        </span>
-                        <a href="{{Course Link}}" target="_blank" class="btn btn-primary bg-gradient rounded-pill px-4 fw-bold shadow-sm">
-                            Start Learning <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
+
+    1. Identify exactly 6 MOST CRITICAL MISSING SKILLS for this role.
+    2. For each missing skill, recommend ONE high-quality FREE course from the providers below.
+    3. Each card must use a DIFFERENT provider — no repeating the same source twice.
+
+    USE ONLY THESE PROVIDERS (pick the best fit per skill):
+    - IBM SkillsBuild (ibmskillsbuild.com)
+    - GeeksforGeeks (geeksforgeeks.org/courses)
+    - Kaggle Learn (kaggle.com/learn)
+    - PW Skills (pwskills.com)
+    - Coding Ninjas / Code360 (codingninjas.com)
+    - Google Cloud Skills Boost (cloudskillsboost.google)
+    - freeCodeCamp (freecodecamp.org/learn)
+    - Microsoft Learn (learn.microsoft.com)
+    - NPTEL (nptel.ac.in)
+
+    OUTPUT HTML ONLY. NO MARKDOWN. NO EXPLANATION TEXT OUTSIDE HTML.
+
+    Output exactly 6 cards in a 2-column grid (col-md-6 each). Use these exact gradient pairs rotating across cards:
+    Card 1: #4facfe → #00f2fe
+    Card 2: #43e97b → #38f9d7
+    Card 3: #fa709a → #fee140
+    Card 4: #a18cd1 → #fbc2eb
+    Card 5: #f77062 → #fe5196
+    Card 6: #0ba360 → #3cba92
+
+    For each card use this EXACT HTML structure (replace ALL {{placeholders}}):
+
+    <div class="col-md-6">
+      <div class="course-card card h-100 border-0 shadow rounded-4 position-relative overflow-hidden">
+        <div class="position-absolute top-0 start-0 w-100" style="height: 5px; background: linear-gradient(90deg, {{GRADIENT_START}} 0%, {{GRADIENT_END}} 100%);"></div>
+        <div class="card-body p-4 d-flex flex-column">
+          <div class="d-flex align-items-start mb-3">
+            <div class="rounded-3 p-2 me-3 flex-shrink-0" style="background: linear-gradient(135deg, {{GRADIENT_START}}22, {{GRADIENT_END}}22); width:46px; height:46px; display:flex; align-items:center; justify-content:center;">
+              <i class="fas fa-layer-group fa-lg" style="color:{{GRADIENT_START}};"></i>
             </div>
+            <div>
+              <span class="badge rounded-pill px-2 py-1 mb-1" style="background:{{GRADIENT_START}}22; color:{{GRADIENT_START}}; font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; font-weight:700;">Missing Skill</span>
+              <h6 class="fw-bold text-dark mb-0" style="font-size:1rem;">{{SKILL_NAME}}</h6>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+            <span class="badge rounded-pill px-3 py-2" style="background: linear-gradient(90deg, {{GRADIENT_START}}, {{GRADIENT_END}}); color:#fff; font-size:0.72rem;">
+              <i class="fas fa-university me-1"></i>{{PROVIDER_NAME}}
+            </span>
+            <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1" style="font-size:0.68rem;">
+              <i class="fas fa-check-circle me-1"></i>FREE
+            </span>
+            <span class="badge bg-light text-secondary rounded-pill px-2 py-1" style="font-size:0.68rem;">
+              <i class="fas fa-clock me-1"></i>{{DURATION}}
+            </span>
+          </div>
+          <p class="text-muted small mb-4" style="line-height:1.65; flex-grow:1;">{{WHY_THIS_COURSE_ONE_SENTENCE}}</p>
+          <a href="{{COURSE_URL}}" target="_blank" rel="noopener"
+             class="btn fw-bold rounded-pill w-100 py-2"
+             style="background: linear-gradient(90deg, {{GRADIENT_START}}, {{GRADIENT_END}}); color:#fff; border:none; font-size:0.85rem;">
+            Start Learning <i class="fas fa-arrow-right ms-2"></i>
+          </a>
         </div>
+      </div>
     </div>
+
+    Wrap ALL 6 cards inside: <div class="row g-4">...</div>
+    DURATION must be a realistic estimate like "~6 hrs", "~10 hrs", "~3 hrs".
+    COURSE_URL must be a real, working URL to the free course on that provider's site.
     """
-    
+
     return await asyncio.to_thread(_call_groq, prompt, 0.3)
