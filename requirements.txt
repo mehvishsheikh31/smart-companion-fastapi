@@ -12,3 +12,4 @@ jinja2
 httpx
 slowapi
 python-dotenv
+itsdangerous
