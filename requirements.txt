@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+aiosqlite
+pdfplumber
+pypdf
+groq
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+jinja2
+httpx
+slowapi
+python-dotenv
