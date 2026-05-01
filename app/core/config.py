@@ -1,5 +1,4 @@
-# app/core/config.py
-#
+
 # PURPOSE: Central configuration object.
 # Instead of calling os.getenv() everywhere in the code (messy, error-prone),
 # we read ALL environment variables once here and expose them as typed Python
