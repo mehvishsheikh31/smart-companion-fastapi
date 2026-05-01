@@ -118,6 +118,12 @@ class SaveInterviewRequest(BaseModel):
     role: str = "General"
 
 
+class ImproveAnswerRequest(BaseModel):
+    question: str
+    answer: str
+
+class ChatRequest(BaseModel):
+    message: str
 # ─────────────────────────────────────────────
 # ADMIN SCHEMAS
 # ─────────────────────────────────────────────
@@ -143,3 +149,4 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+    
