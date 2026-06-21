@@ -54,12 +54,18 @@
                             <label class="small fw-bold text-uppercase text-secondary mb-2">My Current Resume</label>
                             <div class="input-group shadow-sm rounded-4 overflow-hidden border border-light">
                                 <span class="input-group-text bg-white border-0 ps-3"><i class="fas fa-file-pdf text-danger"></i></span>
+                                {# FIX: accept=".pdf" enforces PDF-only at OS file picker level #}
                                 <input type="file" id="resumeFile" class="form-control border-0 py-3" accept=".pdf">
                             </div>
+                            {# Small hint so users know why other formats are rejected #}
+                            <p class="text-white text-opacity-50 small mt-1 mb-0" style="font-size:0.72rem;">
+                                <i class="fas fa-info-circle me-1"></i>PDF only — export from Word/Google Docs if needed
+                            </p>
                         </div>
 
                         <div class="col-md-3">
-                            <button type="button" onclick="generateLearningPath()" class="btn btn-primary bg-gradient w-100 py-3 rounded-4 fw-bold shadow-lg hover-lift">
+                            <button type="button" id="findCoursesBtn" onclick="generateLearningPath()"
+                                    class="btn btn-primary bg-gradient w-100 py-3 rounded-4 fw-bold shadow-lg hover-lift">
                                 <i class="fas fa-wand-magic-sparkles me-2"></i> Find Courses
                             </button>
                         </div>
@@ -104,43 +110,113 @@
         clearInterval(loaderInterval);
     }
 
+    // Show/hide the main button to prevent double-submit while loading
+    function setLoading(isLoading) {
+        const btn = document.getElementById('findCoursesBtn');
+        if (isLoading) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analysing...';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-2"></i> Find Courses';
+        }
+    }
+
+    // FIX: Centralised error card builder so we can customise by error type
+    function buildErrorCard({ icon, iconClass, title, message, showRetry }) {
+        const retryBtn = showRetry
+            ? `<button onclick="generateLearningPath()" class="btn btn-primary rounded-pill px-4 fw-bold mt-3">
+                   <i class="fas fa-redo me-2"></i>Retry
+               </button>`
+            : '';
+        return `
+            <div class="col-12 text-center py-4">
+                <div class="glass-card p-5 mx-auto" style="max-width:480px; background:rgba(255,255,255,0.97);">
+                    <i class="fas ${icon} fa-3x ${iconClass} mb-3"></i>
+                    <h5 class="fw-bold text-dark">${title}</h5>
+                    <p class="text-muted small mb-0">${message}</p>
+                    ${retryBtn}
+                </div>
+            </div>`;
+    }
+
     async function generateLearningPath() {
         const role = document.getElementById('targetRole').value;
         const fileInput = document.getElementById('resumeFile');
 
-        if (!role) return alert("Please select a Target Job Role.");
-        if (fileInput.files.length === 0) return alert("Please upload your resume.");
+        // --- Client-side guards ---
+        if (!role) {
+            alert("Please select a Target Job Role.");
+            return;
+        }
+        if (fileInput.files.length === 0) {
+            alert("Please upload your resume PDF.");
+            return;
+        }
 
+        // FIX: Client-side PDF check before even sending the request.
+        // Catches cases where the user bypasses the accept=".pdf" attribute.
+        const file = fileInput.files[0];
+        if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+            alert("Only PDF files are supported. Please upload a .pdf resume.");
+            return;
+        }
+
+        // --- Start loading state ---
         document.getElementById('courseResults').innerHTML = '';
         document.getElementById('loader').classList.remove('d-none');
+        setLoading(true);
         startLoaderMessages();
         window.scrollTo({ top: 400, behavior: 'smooth' });
 
         const formData = new FormData();
         formData.append('role', role);
-        formData.append('resume', fileInput.files[0]);
+        formData.append('resume', file);
 
         try {
             const response = await fetch('/courses/gap_analysis', { method: 'POST', body: formData });
             const html = await response.text();
+
             stopLoaderMessages();
             document.getElementById('loader').classList.add('d-none');
-            document.getElementById('courseResults').innerHTML = html;
-            document.getElementById('courseResults').scrollIntoView({ behavior: 'smooth' });
+            setLoading(false);
+
+            // FIX: Check HTTP status — the original code only caught network
+            // errors (catch block). Non-200 responses like 429 and 500 were
+            // silently injected as HTML (which works if the server returns
+            // an HTML fragment) but 429 was plain text from slowapi by default.
+            // Now we handle each status code explicitly.
+
+            if (response.status === 429) {
+                // FIX: Rate limit — don't show Retry because it would fail again.
+                document.getElementById('courseResults').innerHTML = buildErrorCard({
+                    icon: 'fa-hourglass-half',
+                    iconClass: 'text-warning',
+                    title: 'Slow down a little!',
+                    message: 'You\'ve hit the analysis limit (3 per minute, 20 per hour). Wait a moment and try again.',
+                    showRetry: false   // ← no Retry button for rate limit
+                });
+            } else if (!response.ok) {
+                // 400, 415, 500, etc. — server returned an HTML fragment; show it.
+                document.getElementById('courseResults').innerHTML = html;
+            } else {
+                // 200 — inject course cards and scroll to them.
+                document.getElementById('courseResults').innerHTML = html;
+                document.getElementById('courseResults').scrollIntoView({ behavior: 'smooth' });
+            }
+
         } catch (e) {
+            // Network-level error (offline, CORS, timeout, etc.)
             stopLoaderMessages();
             document.getElementById('loader').classList.add('d-none');
-            document.getElementById('courseResults').innerHTML = `
-                <div class="col-12 text-center py-4">
-                    <div class="glass-card p-5 mx-auto" style="max-width:480px;">
-                        <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
-                        <h5 class="fw-bold text-dark">Something went wrong</h5>
-                        <p class="text-muted small">Please try again or upload a different resume.</p>
-                        <button onclick="generateLearningPath()" class="btn btn-primary rounded-pill px-4 fw-bold">
-                            <i class="fas fa-redo me-2"></i>Retry
-                        </button>
-                    </div>
-                </div>`;
+            setLoading(false);
+            document.getElementById('courseResults').innerHTML = buildErrorCard({
+                icon: 'fa-wifi-slash',
+                iconClass: 'text-danger',
+                title: 'Connection error',
+                message: 'Could not reach the server. Check your internet connection and try again.',
+                showRetry: true
+            });
         }
     }
 </script>
@@ -183,5 +259,8 @@
     
     .ls-1 { letter-spacing: 1px; }
     #loaderMsg { transition: opacity 0.3s ease; }
+
+    /* Disabled button state */
+    #findCoursesBtn:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
 </style>
 {% endblock %}
