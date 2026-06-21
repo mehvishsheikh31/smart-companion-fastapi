@@ -1,5 +1,7 @@
 import logging
 import os
+from slowapi.errors import RateLimitExceeded
+from app.routers.courses import rate_limit_handler
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
