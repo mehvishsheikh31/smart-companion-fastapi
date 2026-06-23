@@ -45,7 +45,9 @@
         </div>
     </nav>
     {% endif %}
-
+{% if user.sub == "mehvishsheikh.3101@gmail.com" %}
+<a href="/admin"><i class="fas fa-shield-alt"></i> Admin</a>
+{% endif %}
     <div class="main-content">
         {% block content %}{% endblock %}
     </div>
