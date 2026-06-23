@@ -38,7 +38,7 @@ from app.core.security import (
     exchange_code_for_token,
     get_google_user_info
 )
-from app.models.models import User
+from app.models.models import User, ActivityLog   # ← added ActivityLog
 from app.core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -126,6 +126,18 @@ async def google_callback(
                 last_login=datetime.now(timezone.utc)
             )
             db.add(db_user)
+
+        await db.flush()  # get db_user.id before commit
+
+        # ── NEW: log the login action ──────────────────────────────
+        log = ActivityLog(
+            user_email=email,
+            user_name=name,
+            action="login",
+            detail=f"Login #{db_user.login_count}"
+        )
+        db.add(log)
+        # ──────────────────────────────────────────────────────────
 
         await db.commit()
         await db.refresh(db_user)

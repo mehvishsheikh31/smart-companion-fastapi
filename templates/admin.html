@@ -3,14 +3,18 @@
 {% block content %}
 <div class="container py-5" style="margin-top: 80px;">
 
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-down">
         <div>
             <a href="/" class="btn btn-sm btn-outline-secondary mb-2"><i class="fas fa-arrow-left me-2"></i> Back to Dashboard</a>
             <h2 class="fw-bold text-dark mb-0"><i class="fas fa-shield-alt text-primary me-2"></i>Admin Control Center</h2>
         </div>
+        <span class="badge bg-success px-3 py-2 fs-6">
+            <i class="fas fa-circle me-1" style="font-size:8px;"></i> Live
+        </span>
     </div>
 
-    {# ── Stat Cards ── #}
+    <!-- Stat Cards -->
     <div class="row g-4 mb-5 animate-fade-up">
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4 h-100 bg-primary text-white">
@@ -19,13 +23,12 @@
                         <i class="fas fa-users fa-2x"></i>
                     </div>
                     <div>
-                        <h6 class="text-uppercase fw-bold mb-1 opacity-75">Total Registered Users</h6>
+                        <h6 class="text-uppercase fw-bold mb-1 opacity-75">Total Users</h6>
                         <h2 class="display-5 fw-bold mb-0">{{ total_users }}</h2>
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4 h-100 bg-dark text-white">
                 <div class="card-body p-4 d-flex align-items-center">
@@ -33,14 +36,12 @@
                         <i class="fas fa-file-pdf fa-2x"></i>
                     </div>
                     <div>
-                        <h6 class="text-uppercase fw-bold mb-1 opacity-75">Total AI Resume Scans</h6>
+                        <h6 class="text-uppercase fw-bold mb-1 opacity-75">AI Resume Scans</h6>
                         <h2 class="display-5 fw-bold mb-0">{{ total_scans }}</h2>
                     </div>
                 </div>
             </div>
         </div>
-
-        {# ── NEW: Total Login Attempts card ── #}
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #6f42c1, #e83e8c);">
                 <div class="card-body p-4 d-flex align-items-center">
@@ -56,25 +57,89 @@
         </div>
     </div>
 
-    {# ── User Table with Login Tracking ── #}
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden animate-fade-up" style="animation-delay: 0.2s;">
-        <div class="card-header bg-white border-bottom p-4">
+    <!-- Charts Row -->
+    <div class="row g-4 mb-5 animate-fade-up" style="animation-delay:0.1s;">
+        <!-- Bar Chart: User Activity (last 7 days) -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-bar me-2 text-primary"></i>User Activity — Last 7 Days</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="activityChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Pie Chart: Feature Usage -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom p-4">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-pie me-2 text-primary"></i>Feature Usage</h5>
+                </div>
+                <div class="card-body p-4 d-flex align-items-center justify-content-center">
+                    <canvas id="featureChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Activity Feed -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 animate-fade-up" style="animation-delay:0.2s;">
+        <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0 text-dark">
-                <i class="fas fa-table me-2 text-primary"></i>User Database &amp; Login Tracking
+                <i class="fas fa-bolt text-warning me-2"></i>Live Activity Feed
             </h5>
+            <small class="text-muted" id="feed-updated">Auto-refreshes every 30s</small>
+        </div>
+        <div class="card-body p-0">
+            <ul class="list-group list-group-flush" id="live-feed">
+                {% for log in recent_activity %}
+                <li class="list-group-item px-4 py-3 d-flex align-items-center gap-3">
+                    <span class="badge rounded-pill px-3 py-2
+                        {% if log.action == 'login' %}bg-success
+                        {% elif log.action == 'resume_scan' %}bg-primary
+                        {% elif log.action == 'job_search' %}bg-info text-dark
+                        {% elif log.action == 'job_save' %}bg-warning text-dark
+                        {% else %}bg-secondary{% endif %}">
+                        {% if log.action == 'login' %}<i class="fas fa-sign-in-alt me-1"></i>
+                        {% elif log.action == 'resume_scan' %}<i class="fas fa-file-pdf me-1"></i>
+                        {% elif log.action == 'job_search' %}<i class="fas fa-search me-1"></i>
+                        {% elif log.action == 'job_save' %}<i class="fas fa-bookmark me-1"></i>
+                        {% else %}<i class="fas fa-circle me-1"></i>{% endif %}
+                        {{ log.action.replace('_',' ').title() }}
+                    </span>
+                    <div class="flex-grow-1">
+                        <span class="fw-bold text-dark">{{ log.user_name or log.user_email }}</span>
+                        {% if log.detail %}<span class="text-muted ms-2">— {{ log.detail }}</span>{% endif %}
+                    </div>
+                    <small class="text-muted text-nowrap">
+                        <i class="far fa-clock me-1"></i>
+                        {% if log.created_at %}{{ log.created_at.strftime('%d %b, %I:%M %p') }}{% endif %}
+                    </small>
+                </li>
+                {% else %}
+                <li class="list-group-item px-4 py-5 text-center text-muted">
+                    <i class="fas fa-satellite-dish fa-2x mb-3 opacity-50"></i>
+                    <p class="mb-0">No activity yet. Waiting for users...</p>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden animate-fade-up" style="animation-delay:0.3s;">
+        <div class="card-header bg-white border-bottom p-4">
+            <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-primary"></i>User Database &amp; Login Tracking</h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
                         <th class="text-uppercase text-muted small fw-bold px-4 py-3">Profile</th>
-                        <th class="text-uppercase text-muted small fw-bold py-3">Email Address</th>
-                        <th class="text-uppercase text-muted small fw-bold text-center py-3">
-                            <i class="fas fa-sign-in-alt me-1"></i>Login Count
-                        </th>
-                        <th class="text-uppercase text-muted small fw-bold py-3">
-                            <i class="far fa-clock me-1"></i>Last Login
-                        </th>
+                        <th class="text-uppercase text-muted small fw-bold py-3">Email</th>
+                        <th class="text-uppercase text-muted small fw-bold text-center py-3">Logins</th>
+                        <th class="text-uppercase text-muted small fw-bold py-3">Last Active</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,33 +147,24 @@
                     <tr>
                         <td class="px-4 py-3">
                             <div class="d-flex align-items-center">
-                                <img src="{{ u.picture }}" alt="Avatar"
-                                     class="rounded-circle me-3 border"
-                                     width="40" height="40"
+                                <img src="{{ u.picture }}" alt="Avatar" class="rounded-circle me-3 border" width="40" height="40"
                                      onerror="this.src='https://ui-avatars.com/api/?name={{ u.name }}&background=random'">
                                 <span class="fw-bold text-dark">{{ u.name }}</span>
                             </div>
                         </td>
                         <td class="py-3 text-muted">{{ u.email }}</td>
                         <td class="py-3 text-center">
-                            <span class="badge bg-success rounded-pill px-3 py-2 fs-6">
-                                {{ u.login_count or 0 }}
-                            </span>
+                            <span class="badge bg-success rounded-pill px-3 py-2 fs-6">{{ u.login_count or 0 }}</span>
                         </td>
                         <td class="py-3 text-muted small">
                             <i class="far fa-clock me-1"></i>
-                            {% if u.last_login %}
-                                {{ u.last_login.strftime('%d %b %Y, %I:%M %p') }}
-                            {% else %}
-                                Never
-                            {% endif %}
+                            {% if u.last_login %}{{ u.last_login.strftime('%d %b %Y, %I:%M %p') }}{% else %}Never{% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
         {% if not users %}
         <div class="p-5 text-center text-muted">
             <i class="fas fa-folder-open fa-3x mb-3 opacity-50"></i>
@@ -116,13 +172,105 @@
         </div>
         {% endif %}
     </div>
-
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Bar Chart: Activity last 7 days ──────────────────────────────
+const activityCtx = document.getElementById('activityChart').getContext('2d');
+new Chart(activityCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_labels | tojson }},
+        datasets: [{
+            label: 'Active Users',
+            data: {{ chart_values | tojson }},
+            backgroundColor: 'rgba(13, 110, 253, 0.7)',
+            borderColor: 'rgba(13, 110, 253, 1)',
+            borderWidth: 2,
+            borderRadius: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f0f0f0' } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// ── Pie Chart: Feature usage ──────────────────────────────────────
+const featureCtx = document.getElementById('featureChart').getContext('2d');
+new Chart(featureCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ feature_labels | tojson }},
+        datasets: [{
+            data: {{ feature_values | tojson }},
+            backgroundColor: ['#0d6efd','#198754','#0dcaf0','#ffc107','#6f42c1','#fd7e14'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        cutout: '60%',
+        plugins: {
+            legend: { position: 'bottom', labels: { padding: 16, font: { size: 13 } } }
+        }
+    }
+});
+
+// ── Live Feed: auto-refresh every 30s ────────────────────────────
+const actionColors = {
+    'Login':       'bg-success',
+    'Resume Scan': 'bg-primary',
+    'Job Search':  'bg-info text-dark',
+    'Job Save':    'bg-warning text-dark',
+};
+const actionIcons = {
+    'Login':       'fa-sign-in-alt',
+    'Resume Scan': 'fa-file-pdf',
+    'Job Search':  'fa-search',
+    'Job Save':    'fa-bookmark',
+};
+
+async function refreshFeed() {
+    try {
+        const res = await fetch('/admin/live-feed');
+        if (!res.ok) return;
+        const logs = await res.json();
+        const ul = document.getElementById('live-feed');
+        if (!logs.length) return;
+        ul.innerHTML = logs.map(l => {
+            const color = actionColors[l.action] || 'bg-secondary';
+            const icon  = actionIcons[l.action]  || 'fa-circle';
+            return `<li class="list-group-item px-4 py-3 d-flex align-items-center gap-3">
+                <span class="badge rounded-pill px-3 py-2 ${color}">
+                    <i class="fas ${icon} me-1"></i>${l.action}
+                </span>
+                <div class="flex-grow-1">
+                    <span class="fw-bold text-dark">${l.user_name}</span>
+                    ${l.detail ? `<span class="text-muted ms-2">— ${l.detail}</span>` : ''}
+                </div>
+                <small class="text-muted text-nowrap"><i class="far fa-clock me-1"></i>${l.time}</small>
+            </li>`;
+        }).join('');
+        document.getElementById('feed-updated').textContent =
+            'Updated: ' + new Date().toLocaleTimeString();
+    } catch(e) { console.error('Feed refresh failed', e); }
+}
+
+setInterval(refreshFeed, 30000);
+</script>
 
 <style>
     .animate-fade-down { animation: fadeDown 0.6s ease-out; }
     .animate-fade-up   { animation: fadeUp  0.6s ease-out; }
-    @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeUp   { from { opacity: 0; transform: translateY( 20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY( 20px); } to { opacity:1; transform:translateY(0); } }
 </style>
 {% endblock %}

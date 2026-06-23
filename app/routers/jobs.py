@@ -17,7 +17,7 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.models import SavedJob
+from app.models.models import SavedJob, ActivityLog   # ← added ActivityLog
 from app.schemas.schemas import SaveJobRequest
 from app.services import job_service
 
@@ -72,6 +72,18 @@ async def search_jobs(
     try:
         jobs_data = await job_service.search_jobs(role=role, location=location, db=db)
         html = job_service.generate_jobs_html(jobs_data)
+
+        # ── NEW: log job search activity ──────────────────────────
+        log = ActivityLog(
+            user_email=current_user["sub"],
+            user_name=current_user.get("name", ""),
+            action="job_search",
+            detail=f"Searched: {role} in {location}"
+        )
+        db.add(log)
+        await db.commit()
+        # ─────────────────────────────────────────────────────────
+
         return HTMLResponse(content=html)
     except Exception as e:
         logger.error(f"Job search failed: {e}")
@@ -127,6 +139,17 @@ async def save_job(
         created_at=datetime.now(timezone.utc)
     )
     db.add(job)
+
+    # ── NEW: log job save activity ────────────────────────────────
+    log = ActivityLog(
+        user_email=email,
+        user_name=current_user.get("name", ""),
+        action="job_save",
+        detail=f"Saved: {data.title} at {data.company}"
+    )
+    db.add(log)
+    # ─────────────────────────────────────────────────────────────
+
     await db.commit()
     
     return {"message": "Job saved successfully"}

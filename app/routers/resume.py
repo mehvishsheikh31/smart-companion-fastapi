@@ -33,7 +33,7 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.models import Report
+from app.models.models import Report, ActivityLog   # ← added ActivityLog
 from app.services import pdf_service, ai_service
 
 router = APIRouter(prefix="/resume", tags=["Resume"])
@@ -107,7 +107,6 @@ async def analyze_resume(
         raise HTTPException(status_code=400, detail="Please upload a PDF file")
     
     # --- Extract text from PDF ---
-    # pdf_service.extract_text_from_upload is async and handles BytesIO wrapping
     resume_text = await pdf_service.extract_text_from_upload(resume)
     
     # Validate minimum text length
@@ -129,12 +128,22 @@ async def analyze_resume(
         created_at=datetime.now(timezone.utc)
     )
     db.add(new_report)
+
+    # ── NEW: log resume scan activity ─────────────────────────────
+    log = ActivityLog(
+        user_email=current_user["sub"],
+        user_name=current_user.get("name", ""),
+        action="resume_scan",
+        detail=f"Scanned for: {job_role}"
+    )
+    db.add(log)
+    # ─────────────────────────────────────────────────────────────
+
     await db.commit()
     await db.refresh(new_report)
     logger.info(f"Report saved: id={new_report.id}")
     
     # --- Render result ---
-    # Same template as before! Templates don't need to change.
     return templates.TemplateResponse(request, "resume_result.html", {
     "user": current_user,
     "analysis": analysis_html
